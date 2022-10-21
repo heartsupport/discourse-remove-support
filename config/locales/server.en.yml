@@ -1,1 +1,3 @@
 en:
+  site_settings:
+    plugin_name_enabled: "discourse-remove-support enabled?"
