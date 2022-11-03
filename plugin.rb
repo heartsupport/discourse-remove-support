@@ -7,8 +7,6 @@
 # url: https://github.com/heartsupport/discourse-remove-support
 # required_version: 2.7.0
 
-enabled_site_setting :plugin_name_enabled
-
 after_initialize do
   class ::Jobs::RemoveSupportTagJob < Jobs::Scheduled
     every 1.day
