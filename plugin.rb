@@ -21,6 +21,16 @@ after_initialize do
 
       topics.each do |topic|
         topic.tags.delete needs_support_tag
+        # send supplier webhook to remove the tag
+        # make an API call to create a supplier topic
+        res = Net::HTTP.post_form(
+          URI("https://porter.heartsupport.com/webhooks/supplier"),
+          topic_id: topic.id,
+          supported: true,
+          username: topic.user.username,
+          category_id: topic.category_id,
+          closed: topic.closed,
+        )
       end
     end
   end
