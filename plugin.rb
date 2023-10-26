@@ -13,17 +13,25 @@ after_initialize do
 
     def execute(args)
       needs_support_tag = Tag.find_or_create_by(name: "Needs-Support")
+      supported_tag = Tag.find_or_create_by(name: "Supported")
+      asked_user_tag = Tag.find_or_create_by(name: "Asked-User")
       # Query for all with last post created > 14 days && have the tag "Needs-Support"
       # remove the tag Needs-Support
       topics = Topic
         .joins(" INNER JOIN topic_tags ON topic_tags.topic_id = topics.id AND topic_tags.tag_id = #{needs_support_tag.id}")
-        .where("last_posted_at < ?", (Time.now - 14.days))
+        .where("last_posted_at < ?", 14.days.ago)
 
       topics.each do |topic|
         topic.tags.delete needs_support_tag
-        # send supplier webhook to remove the tag
+        topic.tags.delete asked_user_tag
+
+        # add the supported tag
+        topic.tags << supported_tag unless topic.tags.include?(supported_tag)
+        topic.custom_fields["supported"] = true
+        topic.save!
+
         # make an API call to create a supplier topic
-        res = Net::HTTP.post_form(
+        Net::HTTP.post_form(
           URI("https://porter.heartsupport.com/webhooks/supplier"),
           topic_id: topic.id,
           supported: true,
